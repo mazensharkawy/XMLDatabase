@@ -24,7 +24,7 @@ public class Parser implements Database {
         elements = new ArrayList<>();
         dataTypes = new ArrayList<>();
         values = new ArrayList<>();
-        this.validateCommand();
+        
     }
     public static void main(String[] args) {
         String q="CREATE TABLE table_name (Student_name varchar, GPA varchar, ID int);";
@@ -63,6 +63,7 @@ public class Parser implements Database {
     @Override
     public boolean executeStructureQuery(String query) throws SQLException {
         // TODO Auto-generated method stub
+        setQuery(query);
         System.out.println("Matches create or drop");
         if (Pattern.matches("(\\s+|)(CREATE)(.)+", query)) {
             queryPattern = Pattern.compile("(\\s+|)(CREATE)(\\s+)(TABLE)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(\\(){1}((\\s*)([a-zA-Z0-9._%]+)(\\s+)(varchar|int)(\\s*)(\\,|))+(\\s*)(\\)){1}(\\s*)(;)(\\s*)");
@@ -105,6 +106,7 @@ public class Parser implements Database {
     @Override
     public Object[][] executeRetrievalQuery(String query) throws SQLException {
         // TODO Auto-generated method stub
+        setQuery(query);
         System.out.println("Matches select");
 
         queryPattern = Pattern.compile("(\\s+|)(SELECT)(\\s+)((\\s*)([a-zA-Z0-9._%]+)(\\s*)(\\,|))+(\\s+)(FROM)(\\s+)([a-zA-Z0-9._%]+)(\\s+)(WHERE)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(>|<|=)(\\s*)([a-zA-Z0-9._%]+)(\\s*)(;)(\\s*)");
@@ -144,6 +146,7 @@ public class Parser implements Database {
     @Override
     public int executeUpdateQuery(String query) throws SQLException {
         // TODO Auto-generated method stub
+        setQuery(query);
         System.out.println("Matches delete or insert");
 
         if (Pattern.matches("(\\s+|)(DELETE)(.)+", query)) {
