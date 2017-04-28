@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.lang.management.GarbageCollectorMXBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -34,10 +35,17 @@ import javax.xml.validation.Validator;
 public class DBMS {
 
     //The path we are going to save our files in
-    public final static String workingDirectory = "C://Users//HP-//Documents//NetBeansProjects//Database//src//eg//edu//alexu//csd//oop//db";
+    public String workingDirectory;
     //Array List to save the names' of the tables we have
     private ArrayList<String> tablesNames;
-    public DBMS(){
+
+    public DBMS(String URI) {
+        workingDirectory = URI;
+        initialize();
+    }
+
+    public DBMS() {
+        workingDirectory = "C://Users//HP-//Documents//NetBeansProjects//Database//src//eg//edu//alexu//csd//oop//db";
         initialize();
     }
 
@@ -46,32 +54,36 @@ public class DBMS {
         //Check if the path have any xml files and add them in the array list
         File folder = new File(workingDirectory);
         File[] listOfFiles = folder.listFiles();
-        try {
-            for (File file : listOfFiles) {
 
-                if (file.isFile()) {
-                    String name = file.getName();
-                    if (name.endsWith(".xml")) {
-                        String tableName = name.substring(0, name.length() - 4);
-                        XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new FileInputStream(tableName + ".xml"));
+        for (File file : listOfFiles) {
+
+            if (file.isFile()) {
+                String name = file.getName();
+                if (name.endsWith(".xml")) {
+                    String tableName = name.substring(0, name.length() - 4);
+                    try {
+                        FileInputStream fis = new FileInputStream(file);
+                        XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(fis);
 
                         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-                        Schema schema = factory.newSchema(new File(tableName + ".xsd"));
+                        Schema schema = factory.newSchema(new File(workingDirectory + "//" + tableName + ".xsd"));
 
                         Validator validator = schema.newValidator();
                         validator.validate(new StAXSource(reader));
+                        fis.close();
+                        reader.close();
+                    } catch (Exception e) {
+                        System.out.println("ERROR\n" + e.toString());
 
-                        //no exception thrown, so valid
+                    }
+                    //no exception thrown, so valid
 //                        System.out.println("Document is valid");
 
-                        tablesNames.add(tableName);
-                    }
+                    tablesNames.add(tableName);
                 }
             }
-
-        } catch (Exception e) {
-            System.out.println("ERROR\n" + e.toString());
         }
+
     }
 
     /*
@@ -81,7 +93,7 @@ public class DBMS {
 
         File folder = new File(workingDirectory);
         File[] listOfFiles = folder.listFiles();
-        boolean flag=false;
+        boolean flag = false;
         for (File file : listOfFiles) {
 
             if (file.isFile()) {
@@ -89,7 +101,7 @@ public class DBMS {
                 if (name.equals(tableName + ".xml") || name.equals(tableName + ".xml")) {
                     tablesNames.remove(name);
                     file.delete();
-                    flag=true;
+                    flag = true;
                 }
             }
         }
@@ -104,7 +116,7 @@ public class DBMS {
             return false;
         }
         try {
-            File schema = new File(workingDirectory +"//"+ tableName + ".xsd");
+            File schema = new File(workingDirectory + "//" + tableName + ".xsd");
             schema.createNewFile();
             java.io.FileWriter fw = new java.io.FileWriter(schema);
             fw.write(generateXSD(tableName, columnNames));
@@ -112,13 +124,13 @@ public class DBMS {
             XMLOutputFactory xMLOutputFactory = XMLOutputFactory.newInstance();
             FileWriter fileWriter = new FileWriter(workingDirectory + "//" + tableName + ".xml");
             XMLStreamWriter xMLStreamWriter = xMLOutputFactory.createXMLStreamWriter(fileWriter);
-            
+
             xMLStreamWriter.writeStartDocument();
             //xMLStreamWriter.writeDTD("<!DOCTYPE table SYSTEM \"" + tableName + ".dtd\">");
             xMLStreamWriter.writeStartElement("table");
             xMLStreamWriter.writeNamespace("xsi", "http://www.w3.org/2000/10/XMLSchema-instance");
-            xMLStreamWriter.writeAttribute("http://www.w3.org/2000/10/XMLSchema-instance", "noNamespaceSchemaLocation",
-                    "path_to_your.xsd");
+            xMLStreamWriter.writeAttribute("http://www.w3.org/2000/10/XMLSchema-instance", "schemaLocation",
+                    "http://www.w3schools.com file:///" + workingDirectory.replace("//", "/") + "/" + tableName + ".xsd");
             xMLStreamWriter.writeStartElement("row");
 
             for (int i = 0; i < columnNames.length; i++) {
@@ -135,6 +147,7 @@ public class DBMS {
             xMLStreamWriter.flush();
             xMLStreamWriter.close();
             fileWriter.close();
+            tablesNames.add(tableName);
             //System.out.println(xmlString);
         } catch (Exception e) {
             System.out.println("CreateTable : " + e.toString());
@@ -146,12 +159,27 @@ public class DBMS {
 
     public static void main(String[] args) {
 
-        
-        
-//        try{
-//            File schema = new File(workingDirectory + "\\try" + ".xsd");
-//            System.out.println(schema.exists());
-//            System.out.println(schema.createNewFile());}catch(Exception e){}
+//        DBMS dbms= new DBMS();
+//        System.out.println(dbms.tablesNames.toString());
+//        dbms.createTable("test", new String[]{"varchar","varchar","int"}, new String[]{"Course","Grade","Marks"});
+//        dbms.insert("test", new String[]{"Course","Grade"}, new String[]{"Programming","A+"});
+//        dbms.insert("test",new String[]{"Course","Grade","Marks"},  new String[]{"DataStructures","A+","100"});
+        try {
+            Parser parser = new Parser();
+            parser.executeStructureQuery("CREATE TABLE test (Course varchar, Grade varchar , Marks int);");
+            System.out.println("done 1");
+            System.out.println(parser.executeUpdateQuery("INSERT INTO test (Course, Grade) VALUES (Programming_II,A);"));
+            System.out.println("done 2");
+//        parser.executeUpdateQuery("INSERT INTO TABLE test (Course, Grade,Marks) VALUES (DataStructures, A+,100);");
+//        System.out.println("done 3");
+//        /parser.executeUpdateQuery("INSERT INTO TABLE test (Course, Grade,Marks) VALUES (Logic, B+,70);");
+//        System.out.println("done 4");
+//        String[][] s = (String[][]) parser.executeRetrievalQuery("SELECT COURSE , GRADE WHERE Marks >50");
+//        for(String[] row:s) System.out.println(s.toString());
+        } catch (Exception e) {
+            System.out.println("XML NOT VALID !\n" + e.toString());
+        }
+//        
         //DBMS db = new DBMS();
 //        db.delete("mazen", "Name", '=', "Mazen");
         //System.out.println(db.insert("mazen", new String[]{"Nada", "4302", "3.9"}, new String[]{"Name", "ID", "GPA"}));
@@ -172,13 +200,28 @@ public class DBMS {
         //System.out.println(db.dropTable("mazen"));
     }
 
-    public int insert(String tableName, String[] values, String[] columns) {
+    public static boolean findIn(Object[] x, Object y) {
+
+        for (Object j : x) {
+            if (j.equals(y)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public int insert(String tableName, String[] columns, String[] values) {
         //Return False if the table's name is invalid
         System.out.println("inserting");
+        if (values.length != columns.length) {
+            return -1;
+        }
         if (!tablesNames.contains(tableName)) {
-            System.out.println("table not here");
+            System.out.println("table not here\n" + tablesNames.toString());
             return 0;
         }
+        String[][] types = (String[][]) findTypes(tableName);
         String file = workingDirectory + "//" + tableName + ".xml";
         try {
             FileInputStream fileInputStream = new FileInputStream(file);
@@ -197,11 +240,21 @@ public class DBMS {
                 if (event.getEventType() == XMLEvent.END_ELEMENT && !isWritten) {
                     if (event.asEndElement().getName().toString().equalsIgnoreCase("row")) {
                         writer.add(eventFactory.createStartElement("", null, "row"));
-
-                        for (int i = 0; i < values.length; i++) {
-                            writer.add(eventFactory.createStartElement("", null, columns[i]));
-                            writer.add(eventFactory.createCharacters(values[i]));
-                            writer.add(eventFactory.createEndElement("", null, columns[i]));
+                        int j = 0;
+                        for (int i = 0; i < types.length; i++) {
+                            writer.add(eventFactory.createStartElement("", null, types[i][0]));
+                            if (findIn(columns, types[i][0])) {
+                                writer.add(eventFactory.createCharacters(values[j]));
+                                j++;
+                            } else {
+                                if (types[i][1].equalsIgnoreCase("varchar")) {
+                                    writer.add(eventFactory.createCharacters(""));
+                                }
+                                if (types[i][1].equalsIgnoreCase("int")) {
+                                    writer.add(eventFactory.createCharacters("0"));
+                                }
+                            }
+                            writer.add(eventFactory.createEndElement("", null, types[i][0]));
                         }
                         isWritten = true;
                         writer.add(eventFactory.createEndElement("", null, "row"));
@@ -221,7 +274,7 @@ public class DBMS {
             System.out.println("out of condition");
         } catch (Exception e) {
             System.out.println(e.toString());
-            return 0;
+            return -1;
         }
 
         File folder = new File(workingDirectory);
@@ -349,9 +402,15 @@ public class DBMS {
         if (listOfLists.size() == 0) {
             return null;
         }
-        String[][] queries = new String[listOfLists.size()][types.length];
+        String[][] queries = new String[listOfLists.size() + 2][types.length];
         int i = 0;
-        for (i = 0; i < listOfLists.size(); i++) {
+        for (int k = 0; k < types.length; k++) {
+            queries[0][k] = types[k][0];
+        }
+        for (int k = 0; k < types.length; k++) {
+            queries[1][k] = types[k][1];
+        }
+        for (i = 2; i < listOfLists.size(); i++) {
             for (int k = 0; k < types.length; k++) {
                 queries[i][k] = listOfLists.get(i).get(k);
             }
@@ -586,26 +645,27 @@ public class DBMS {
     }
 
     public String generateXSD(String tableName, String[] columnNames) {
-        String Start = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "   <xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\">\n"
-                + "         <!-- XML Schema Generated from XML Document on Mon Apr 24 2017 20:13:27 GMT+0200 (Egypt Standard Time) -->\n"
-                + "         <!-- with XmlGrid.net Free Online Service http://xmlgrid.net -->\n"
-                + "         <xs:element name=\"table\">\n"
-                + "               <xs:complexType>\n"
-                + "                     <xs:sequence>\n"
-                + "                           <xs:element name=\"row\" maxOccurs=\"unbounded\">\n"
-                + "                                 <xs:complexType>\n"
-                + "                                       <xs:sequence>";
+        String Start = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"\n"
+                + "targetNamespace=\"https://www.w3schools.com\"\n"
+                + "xmlns=\"https://www.w3schools.com\"\n"
+                + "elementFormDefault=\"qualified\">"
+                + "<xsd:element name=\"table\">"
+                + "<xsd:complexType>"
+                + "<xsd:sequence>"
+                + "<xsd:element name=\"row\" maxOccurs=\"unbounded\">"
+                + "<xsd:complexType>"
+                + "<xsd:sequence>";
         for (String column : columnNames) {
-            Start += "                                             <xs:element name=\"" + column + "\" type=\"xs:string\"></xs:element>";
+            Start += "<xsd:element name=\"" + column + "\" type=\"xsd:string\"></xsd:element>";
         }
-        return Start += " </xs:sequence>\n"
-                + "                                 </xs:complexType>\n"
-                + "                           </xs:element>\n"
-                + "                     </xs:sequence>\n"
-                + "               </xs:complexType>\n"
-                + "         </xs:element>\n"
-                + "   </xs:schema>";
+        return Start += " </xsd:sequence>"
+                + "</xsd:complexType>"
+                + "</xsd:element>"
+                + "</xsd:sequence>"
+                + "</xsd:complexType>"
+                + "</xsd:element>"
+                + "</xsd:schema>";
     }
 }
 /*Validating

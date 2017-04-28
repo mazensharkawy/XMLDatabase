@@ -14,9 +14,14 @@ public class Parser implements Database {
     ArrayList<String> elements;
     ArrayList<String> values;
     ArrayList<String> dataTypes;
+    String URI;
 
-    public Parser() {  // Only One Instance ????
-
+    public Parser() {
+        URI="C://Users//HP-//Documents//NetBeansProjects//Database//src//eg//edu//alexu//csd//oop//db";
+    }
+    
+    public Parser(String URI) {  // Only One Instance ????
+        this.URI=URI;
     }
 
     public void setQuery(String query) {
@@ -85,7 +90,7 @@ public class Parser implements Database {
                 dataTypes.add(matcher.group(4));
             }
              
-         return new DBMS().createTable(tableName,dataTypes.toArray(new String[dataTypes.size()]),elements.toArray(new String[elements.size()]));
+         return new DBMS(URI).createTable(tableName,dataTypes.toArray(new String[dataTypes.size()]),elements.toArray(new String[elements.size()]));
             
         } else {
             queryPattern = Pattern.compile("(\\s+|)(DROP)(\\s+)(TABLE)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(;)(\\s*)");
@@ -94,7 +99,7 @@ public class Parser implements Database {
                 tableName = matcher.group(6);
                 System.out.println(tableName);
             }
-            return new DBMS().dropTable(tableName);
+            return new DBMS(URI).dropTable(tableName);
             /* 
           Check if file name exists 
 	            if exists then return DBMS.deleteFile();
@@ -135,17 +140,18 @@ public class Parser implements Database {
         while (matcher.find()) {
             elements.add(matcher.group(2));
             System.out.println(matcher.group(2));
-
         }
         /*
 		 Validate columns in DBMS 
          */
-        return new DBMS().query(tableName, rightSide, condition.charAt(0), leftSide);
+        return new DBMS(URI).query(tableName, rightSide, condition.charAt(0), leftSide);
     }
 
     @Override
     public int executeUpdateQuery(String query) throws SQLException {
         // TODO Auto-generated method stub
+        if (Pattern.matches("(\\s+|)(DELETE)(\\s+)(FROM)(\\s+)([a-zA-Z0-9._%]+)(\\s+)(WHERE)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(>|=|<)(\\s*)([a-zA-Z0-9._%]+)(\\s*)(;)(\\s*)", query) || Pattern.matches("(\\s+|)(INSERT)(\\s+)(INTO)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(\\()((\\s*)([a-zA-Z0-9._%]+)(\\,*))+(\\))(\\s*)(VALUES)(\\s*)(\\()((\\s*)([a-zA-Z0-9._%]+)(\\,*))+(\\))(\\s*)(\\;)", query)){}
+        else{return -1;}
         setQuery(query);
         System.out.println("Matches delete or insert");
 
@@ -166,7 +172,7 @@ public class Parser implements Database {
             System.out.println(leftSide);
             System.out.println(condition);
             System.out.println(rightSide);
-            return new DBMS().delete(tableName,rightSide , condition.charAt(0), leftSide);
+            return new DBMS(URI).delete(tableName,rightSide , condition.charAt(0), leftSide);
             /*	
 		check in DBMS for tableName
 		      if exists (check two sides of condition**) return DBMS.delete(); 
@@ -174,7 +180,8 @@ public class Parser implements Database {
 		**idk what needs to be done with the conditions operands, up to you in the DBMS Class
              */
         } else {
-            queryPattern = Pattern.compile("(\\s+|)(INSERT)(\\s+)(INTO)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(\\(){1}((\\s*)([a-zA-Z0-9._%]+)(\\s*)(\\,|))+(\\s*)(\\)){1}(\\s+)(VALUES)(\\s*)(\\(){1}((\\s*)([a-zA-Z0-9._%]+)(\\s*)(\\,|))+(\\s*)(\\)){1}(\\s*)(;)(\\s*)");
+            System.out.println("insert");
+            queryPattern = Pattern.compile("(\\s+|)(INSERT)(\\s+)(INTO)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(\\()((\\s*)([a-zA-Z0-9._%]+)(\\,*))+(\\))(\\s*)(VALUES)(\\s*)(\\()((\\s*)([a-zA-Z0-9._%]+)(\\,*))+(\\))(\\s*)(\\;)");
             matcher = queryPattern.matcher(query);
             if (matcher.find()) {
                 tableName = matcher.group(6);
@@ -200,8 +207,8 @@ public class Parser implements Database {
             for (int i = 0; i < values.size(); i++) {
                 System.out.println(elements.get(i) + " " + values.get(i));
             }
-            
-            return new DBMS().insert(tableName, values.toArray(new String[values.size()]), elements.toArray(new String[elements.size()]));
+            System.out.println("Elements: "+elements+"\nValues: "+values);
+            return new DBMS(URI).insert(tableName, elements.toArray(new String[elements.size()]), values.toArray(new String[values.size()]));
             /*  
         check if tableName exists
            if doesn't exist display error message / return 0
