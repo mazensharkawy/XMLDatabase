@@ -12,10 +12,15 @@ import java.sql.SQLException;
  * @author HP-
  */
 public class ResultSetMetaData implements java.sql.ResultSetMetaData{
+    Object[][] result;
+    
+    public ResultSetMetaData(Object[][] result){
+        this.result=result;
+    }
     
     @Override
     public int getColumnCount() throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try{return result[0].length ;}catch(Exception e ){throw new SQLException();}
     }
 
     @Override
@@ -55,12 +60,12 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData{
 
     @Override
     public String getColumnLabel(int i) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try{return (String)result[0][i];}catch(Exception e ){throw new SQLException();}
     }
 
     @Override
     public String getColumnName(int i) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getColumnLabel(i);
     }
 
     @Override
@@ -80,7 +85,7 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData{
 
     @Override
     public String getTableName(int i) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return "UNKNOWN TABLE";
     }
 
     @Override
@@ -90,7 +95,9 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData{
 
     @Override
     public int getColumnType(int i) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try{
+        if(((String)result[1][i]).equalsIgnoreCase("int")) return java.sql.Types.INTEGER;
+        else return java.sql.Types.VARCHAR;}catch(Exception e){throw new SQLException();}
     }
 
     @Override

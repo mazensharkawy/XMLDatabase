@@ -31,9 +31,63 @@ import java.util.Map;
  * @author HP-
  */
 public class ResultSet implements java.sql.ResultSet{
-    Object[] result;
+    Object[][] result;
     int index;
-    public ResultSet(Object[] result) {
+    Statement statement;
+    
+     @Override
+    public boolean first() throws SQLException {
+        index=2;
+        return result.length>0;
+    }
+
+    @Override
+    public boolean last() throws SQLException {
+        index=result.length-1;
+        return result.length>0;
+    }
+    
+    
+    @Override
+    public Object getObject(int i) throws SQLException {
+        try{
+        return (String)result[index][i];}
+        catch(Exception e){
+            System.out.println(e);
+            throw new SQLException();
+        }
+    }
+    
+    @Override
+    public int findColumn(String string) throws SQLException {
+        int i=0;
+        boolean found=false;
+        for(i=0;i<result[0].length;i++){
+            String column = (String)result[0][i];
+            if(column.equalsIgnoreCase(string)){
+                found=true;break;                
+            }
+        }
+        if(found) return i;
+        else throw new SQLException();
+    }
+
+    
+    @Override
+    public int getInt(String string) throws SQLException {
+        int i=findColumn(string);
+        if(!((String)result[index][i]).equalsIgnoreCase("int")){throw new SQLException();}
+        return Integer.parseInt((String)result[index][i]);
+    }
+    
+    @Override
+    public int getInt(int i) throws SQLException {
+        if(!((String)result[index][i]).equalsIgnoreCase("int")){throw new SQLException();}
+        return Integer.parseInt((String)result[index][i]);        
+    }
+    
+    public ResultSet(Statement stat,Object[][] result) {
+        statement=stat;
         this.result = result;
         index=2;
     }       
@@ -55,7 +109,7 @@ public class ResultSet implements java.sql.ResultSet{
 
     @Override
     public String getString(int i) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return (String) getObject(i);
     }
 
     @Override
@@ -73,10 +127,7 @@ public class ResultSet implements java.sql.ResultSet{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public int getInt(int i) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+   
 
     @Override
     public long getLong(int i) throws SQLException {
@@ -135,7 +186,8 @@ public class ResultSet implements java.sql.ResultSet{
 
     @Override
     public String getString(String string) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int i=findColumn(string);
+        return (String)getObject(i);
     }
 
     @Override
@@ -153,11 +205,7 @@ public class ResultSet implements java.sql.ResultSet{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public int getInt(String string) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+    
     @Override
     public long getLong(String string) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -230,21 +278,11 @@ public class ResultSet implements java.sql.ResultSet{
 
     @Override
     public ResultSetMetaData getMetaData() throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object getObject(int i) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new eg.edu.alexu.csd.oop.db.ResultSetMetaData(result);
     }
 
     @Override
     public Object getObject(String string) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int findColumn(String string) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -298,16 +336,6 @@ public class ResultSet implements java.sql.ResultSet{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public boolean first() throws SQLException {
-        index=2;
-        return result.length>0;
-    }
-
-    @Override
-    public boolean last() throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public int getRow() throws SQLException {
@@ -602,7 +630,7 @@ public class ResultSet implements java.sql.ResultSet{
 
     @Override
     public Statement getStatement() throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return statement;
     }
 
     @Override

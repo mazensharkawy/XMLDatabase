@@ -28,7 +28,7 @@ public class Statement implements java.sql.Statement {
     
     @Override
     public ResultSet executeQuery(String string) throws SQLException {
-        
+        return (ResultSet) new eg.edu.alexu.csd.oop.db.ResultSet(this, parser.executeRetrievalQuery(string));
     }
 
     @Override

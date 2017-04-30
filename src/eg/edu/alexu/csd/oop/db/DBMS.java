@@ -61,7 +61,7 @@ public class DBMS {
                 String name = file.getName();
                 if (name.endsWith(".xml")) {
                     String tableName = name.substring(0, name.length() - 4);
-                    try {
+                    /*try {
                         FileInputStream fis = new FileInputStream(file);
                         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(fis);
 
@@ -75,7 +75,7 @@ public class DBMS {
                     } catch (Exception e) {
                         System.out.println("ERROR\n" + e.toString());
 
-                    }
+                    }*/
                     //no exception thrown, so valid
 //                        System.out.println("Document is valid");
 
@@ -86,7 +86,7 @@ public class DBMS {
 
     }
 
-    /*
+    /*5
     Check if the this table is in the Arraylist, if it is delete it and delete the xml file as well
      */
     public boolean dropTable(String tableName) {
@@ -302,8 +302,11 @@ public class DBMS {
     }
 
     public Object[][] query(String tableName, String column, char condition, Object Value) {
+        System.out.println("querying");
         String[][] types = (String[][]) findTypes(tableName);
+        if(condition !='=' && condition !='<'&& condition !='>') {System.out.println("Condition Error"); return null;}
         if (types == null) {
+            System.out.println("Types null");
             return null;
         }
 

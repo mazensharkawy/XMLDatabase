@@ -32,8 +32,20 @@ public class Parser implements Database {
         
     }
     public static void main(String[] args) {
-        String q="CREATE TABLE table_name (Student_name varchar, GPA varchar, ID int);";
-        System.out.println(Pattern.matches("(\\s+|)(CREATE)(\\s+)(TABLE)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(\\(){1}((\\s*)([a-zA-Z0-9._%]+)(\\s+)(varchar|int)(\\s*)(\\,|))+(\\s*)(\\)){1}(\\s*)(;)(\\s*)", q));
+        Parser parser = new Parser();
+        
+        parser.queryPattern = Pattern.compile("(\\s+|)(SELECT)(\\s+)(\\()(((\\s*)([a-zA-Z0-9._%]+)(\\s*)(\\,|))+)+(\\))(\\s*)(FROM)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(WHERE)(\\s*)([a-zA-Z0-9._%]+)(\\s*)(<|=|>)(\\s*)([a-zA-Z0-9._%]+)(\\s*)(;)(\\s*)");
+        parser.matcher = parser.queryPattern.matcher("SELECT (COURSE , GRADE) FROM test WHERE Marks < 50;");
+        System.out.println(Pattern.matches("(\\s+|)(SELECT)(\\s+)(\\()(((\\s*)([a-zA-Z0-9._%]+)(\\s*)(\\,|))+)+(\\))(\\s*)(FROM)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(WHERE)(\\s*)([a-zA-Z0-9._%]+)(\\s*)(<|=|>)(\\s*)([a-zA-Z0-9._%]+)(\\s*)(;)(\\s*)", "SELECT (COURSE , GRADE) FROM test WHERE Marks < 50;"));
+        parser.matcher.find();
+        for(int i =0;i<50;i++){
+        try{            
+            if(parser.matcher.group(i)==null) break;
+            System.out.println(i+"      "+parser.matcher.group(i));            
+        }
+        catch(Exception e){System.out.println(e);break;}
+        }
+        
     }
     public boolean validateCommand() {
 
@@ -114,17 +126,19 @@ public class Parser implements Database {
         setQuery(query);
         System.out.println("Matches select");
 
-        queryPattern = Pattern.compile("(\\s+|)(SELECT)(\\s+)((\\s*)([a-zA-Z0-9._%]+)(\\s*)(\\,|))+(\\s+)(FROM)(\\s+)([a-zA-Z0-9._%]+)(\\s+)(WHERE)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(>|<|=)(\\s*)([a-zA-Z0-9._%]+)(\\s*)(;)(\\s*)");
+        queryPattern = Pattern.compile("(\\s+|)(SELECT)(\\s+)(\\()(((\\s*)([a-zA-Z0-9._%]+)(\\s*)(\\,|))+)+(\\))(\\s*)(FROM)(\\s+)([a-zA-Z0-9._%]+)(\\s*)(WHERE)(\\s*)([a-zA-Z0-9._%]+)(\\s*)(<|=|>)(\\s*)([a-zA-Z0-9._%]+)(\\s*)(;)(\\s*)");
         matcher = queryPattern.matcher(query);
 
         String leftSide = null, condition = null, rightSide = null;
-
+        System.out.println("finding1");
         if (matcher.find()) {
-            tableName = matcher.group(12);
-            leftSide = matcher.group(16);
-            condition = matcher.group(18);
-            rightSide = matcher.group(20);
+            System.out.println("pattern found");
+            tableName = matcher.group(15);
+            leftSide = matcher.group(19);
+            condition = matcher.group(21);
+            rightSide = matcher.group(23);
         }
+        System.out.println("finding2");
         /*
 		 Check if file name exists
 		       if doesn't exist display error message / return false
@@ -140,6 +154,7 @@ public class Parser implements Database {
         while (matcher.find()) {
             elements.add(matcher.group(2));
             System.out.println(matcher.group(2));
+            
         }
         /*
 		 Validate columns in DBMS 

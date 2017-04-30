@@ -37,11 +37,12 @@ public class Connection implements java.sql.Connection {
 
     @Override
     public void close() throws SQLException {
+        
     }
 
     @Override
     public Statement createStatement() throws SQLException {
-        return new eg.edu.alexu.csd.oop.db.Statement(URI);
+        return (Statement) new eg.edu.alexu.csd.oop.db.Statement(URI);
     }
 
     @Override
